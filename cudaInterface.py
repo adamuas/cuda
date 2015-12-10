@@ -1,7 +1,5 @@
 
 import sys;
-sys.path.insert(0,"../");
-sys.path.insert(0,"../core/");
 import pycuda.driver as cuda;
 import pycuda.autoinit;
 import pycuda.compiler;
@@ -9,13 +7,8 @@ from pycuda.curandom import rand as curand;
 from pycuda.elementwise import ElementwiseKernel;
 import pycuda.gpuarray as gpuarray;
 from pycuda import cumath; 
-
-
 import numpy;
 
-
-import constants;
-import netParams;
 
 """
 Cuda interface for computing on gpu
