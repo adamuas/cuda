@@ -8,8 +8,8 @@ from pycuda.elementwise import ElementwiseKernel;
 import pycuda.gpuarray as gpuarray;
 from pycuda import cumath; 
 import numpy;
-
-
+import constants; #constants file
+import netParams; #configuration file
 """
 Cuda interface for computing on gpu
 
@@ -21,49 +21,18 @@ debug = False;
 mod = pycuda.compiler.SourceModule(
 """
     //put in range
-    __global__ void putinrange(float *SOL)
+    __global__ void putinrange(float *SOL, float *minVal, float maxVal)
     {
         int idx = threadIdx.x;
         
-        if(SOL[idx] < -1.0)
-            SOL[idx] = 0.0;
+        if(SOL[idx] < minVal)
+            SOL[idx] = minVal;
         
-        if(SOL[idx] > 1.0)
-            SOL[idx] = 1.0;
+        if(SOL[idx] > maxVal)
+            SOL[idx] = maxVal;
    
     }
-    
-    //cross-over operation
-    __global__ void crossOver(float *SOLA, float *SOLB)
-    {
-        int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-        //TODO - Scapped
-        //cross-over genes between solutions
-
-        float g = SOLA[idx];
-        float g2 = SOLB[idx];
-        
-        SOLB[idx] = g;
-        SOLA[idx] = g2;
-        
-    }
-    
-    //differential evolution - float *FOLLOWER_SOLS, float *TO_MUTATE_SOLS,
-    __global__ void differential_evolve(float *LEADER_SOLS)
-    {
-        //TODO - Scapped
-        int idx = blockIdx.x * blockDim.x + threadIdx.x;
-        int idy = blockIdx.y * blockDim.y + threadIdx.y;
-        
-        
-        LEADER_SOLS[idx] = LEADER_SOLS[idx] * 2;
-        
-        
-        LEADER_SOLS[idy] = LEADER_SOLS[idy] * 2;
-        
-        
-    }
     
 """
 );
@@ -71,36 +40,36 @@ mod = pycuda.compiler.SourceModule(
 
 
 
-def cuda_putInRange(sols,minVal, maxVal):
-    """ mutatest the given genetic string using cuda"""
+def cuda_putInRange(sol,minVal, maxVal):
+    """ puts parameters of a given genetic string in range of minVal and maxVal"""
     
-
-    a = numpy.random.randn(4).astype(numpy.float32);
+    //TODO - TEST 
     
     #allocate memory to device
-    a_gpu = cuda.mem_alloc(a.nbytes);
+    sol_gpu = cuda.mem_alloc(sol.nbytes);
     minVal_gpu = cuda.mem_alloc(sys.getsizeof(minVal));
     minVal_gpu = cuda.mem_alloc(sys.getsizeof(maxVal));
     
     #copy to memory
-    cuda.memcpy_htod(a_gpu, a);
-    #cuda.memcpy_htod(minVal_gpu, minVal);
-    #cuda.memcpy_htod(maxVal_gpu, maxVal);
+    cuda.memcpy_htod(sol_gpu, sol);
+    cuda.memcpy_htod(minVal_gpu, minVal);
+    cuda.memcpy_htod(maxVal_gpu, maxVal);
     
     
     func = mod.get_function("putinrange");
-    func(a_gpu, block=(4,4,1));
+    func(sol_gpu, block=(4,4,1));
     
-    a_doubled = numpy.empty_like(a);
-    cuda.memcpy_dtoh(a_doubled, a_gpu);
+    sol_fixed = numpy.empty_like(sol);
+    cuda.memcpy_dtoh(sol_doubled, sol_gpu);
 
 def cuda_ageSols(sols):
     """ makes solutions to age """
+    
+    
 
     #get num sols
     num_sols = len(sols);
-    
-    
+
     
     #convert to form of numpy arrays
     sols_arr = numpy.array(sols, numpy.float32);
