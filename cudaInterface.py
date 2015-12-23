@@ -38,7 +38,7 @@ mod = pycuda.compiler.SourceModule(
     {
         int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-        
+        //TODO - Scapped
         //cross-over genes between solutions
 
         float g = SOLA[idx];
@@ -52,7 +52,7 @@ mod = pycuda.compiler.SourceModule(
     //differential evolution - float *FOLLOWER_SOLS, float *TO_MUTATE_SOLS,
     __global__ void differential_evolve(float *LEADER_SOLS)
     {
-        
+        //TODO - Scapped
         int idx = blockIdx.x * blockDim.x + threadIdx.x;
         int idy = blockIdx.y * blockDim.y + threadIdx.y;
         
